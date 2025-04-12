@@ -52,12 +52,20 @@ def embed_text():
         for j in range(cover_image.shape[1]):
             for k in range(3):
                 if idx < len(binary_text):
-                    cover_image[i, j, k] = (cover_image[i, j, k] & ~1) | int(binary_text[idx])
+                    # Safe casting to avoid OverflowError
+                    cover_image[i, j, k] = np.uint8((int(cover_image[i, j, k]) & ~1) | int(binary_text[idx]))
                     idx += 1
 
     save_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
-    cv2.imwrite(save_path, cover_image)
-    messagebox.showinfo("Success", "Text embedded and saved successfully!")
+    if not save_path:
+        return  # User canceled
+
+    success = cv2.imwrite(save_path, cover_image)
+    if success:
+        messagebox.showinfo("Success", "Text embedded and saved successfully!")
+    else:
+        messagebox.showerror("Error", "Failed to save the image. Please try again.")
+
 
 # Function to retrieve text from image
 def retrieve_text():
